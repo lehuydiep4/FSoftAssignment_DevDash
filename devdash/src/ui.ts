@@ -1,167 +1,65 @@
 import type { AppState } from './types';
+import { renderLoadingView } from './ui/loader';
+import { renderErrorView } from './ui/error';
+import { renderSuccessState } from './ui/success';
+
+export interface UiCallbacks {
+  onRetry: () => void;
+  onSearchChange: (query: string) => void;
+  onSearchClear: () => void;
+  onCategoryChange: (category: string) => void;
+  onSortChange: (sortBy: string) => void;
+  onSelectProduct: (id: number | null) => void;
+}
 
 /**
- * Renders the application UI based on the current state.
+ * Renders the application in the idle state.
  */
-export function renderApp(state: AppState, container: HTMLElement, onRetry: () => void): void {
+function renderIdleState(container: HTMLElement): void {
+  container.innerHTML = `
+    <div class="status-msg text-center py-10">
+      <p class="text-slate-500 dark:text-slate-400">Initializing application...</p>
+    </div>
+  `;
+}
+
+/**
+ * Renders the application in the loading state.
+ */
+function renderLoadingState(container: HTMLElement): void {
+  container.innerHTML = renderLoadingView();
+}
+
+/**
+ * Renders the application in the error state.
+ */
+function renderErrorState(container: HTMLElement, errorMessage: string, onRetry: () => void): void {
+  container.innerHTML = renderErrorView(errorMessage);
+  const retryBtn = document.getElementById('retry-btn');
+  if (retryBtn) {
+    retryBtn.addEventListener('click', onRetry);
+  }
+}
+
+/**
+ * Main render function that handles routing to corresponding state renderer functions.
+ */
+export function renderApp(state: AppState, container: HTMLElement, callbacks: UiCallbacks): void {
   switch (state.status) {
     case 'idle':
-      container.innerHTML = `
-        <div class="status-msg">
-          <p>Initializing application...</p>
-        </div>
-      `;
+      renderIdleState(container);
       break;
 
     case 'loading':
-      // Render beautiful skeleton cards to wow the user
-      const skeletons = Array.from({ length: 8 })
-        .map(
-          () => `
-        <div class="product-card skeleton">
-          <div class="skeleton-img shimmer"></div>
-          <div class="product-info">
-            <div class="skeleton-badge shimmer"></div>
-            <div class="skeleton-title shimmer"></div>
-            <div class="skeleton-desc shimmer"></div>
-            <div class="skeleton-desc shimmer" style="width: 80%"></div>
-            <div class="skeleton-footer">
-              <div class="skeleton-price shimmer"></div>
-              <div class="skeleton-rating shimmer"></div>
-            </div>
-          </div>
-        </div>
-      `
-        )
-        .join('');
-
-      container.innerHTML = `
-        <div class="dashboard-layout">
-          <header class="app-header">
-            <div class="header-logo">
-              <span class="logo-icon">⚡</span>
-              <h1>DevDash</h1>
-            </div>
-            <p class="subtitle">Premium Async Developer Dashboard</p>
-          </header>
-          <div class="loading-bar shimmer"></div>
-          <main class="app-main">
-            <div class="products-grid">
-              ${skeletons}
-            </div>
-          </main>
-        </div>
-      `;
+      renderLoadingState(container);
       break;
 
     case 'error':
-      container.innerHTML = `
-        <div class="dashboard-layout">
-          <header class="app-header">
-            <div class="header-logo">
-              <span class="logo-icon">⚡</span>
-              <h1>DevDash</h1>
-            </div>
-          </header>
-          <main class="app-main error-center">
-            <div class="error-card">
-              <div class="error-icon">⚠️</div>
-              <h2>Failed to Load Dashboard</h2>
-              <p class="error-msg">${state.errorMessage}</p>
-              <button id="retry-btn" class="btn btn-primary">
-                <span>🔄</span> Retry Connection
-              </button>
-            </div>
-          </main>
-        </div>
-      `;
-      // Bind event listener to the retry button
-      const retryBtn = document.getElementById('retry-btn');
-      if (retryBtn) {
-        retryBtn.addEventListener('click', onRetry);
-      }
+      renderErrorState(container, state.errorMessage, callbacks.onRetry);
       break;
 
     case 'success':
-      const productCards = state.products
-        .map(
-          (product) => `
-        <div class="product-card" data-id="${product.id}">
-          <div class="product-img-wrapper">
-            <img class="product-image" src="${product.thumbnail}" alt="${product.title}" loading="lazy">
-            ${
-              product.discountPercentage > 0
-                ? `<span class="discount-badge">-${Math.round(product.discountPercentage)}%</span>`
-                : ''
-            }
-          </div>
-          <div class="product-info">
-            <div class="product-meta">
-              <span class="product-brand">${product.brand}</span>
-              <span class="product-category">${product.category}</span>
-            </div>
-            <h3 class="product-title" title="${product.title}">${product.title}</h3>
-            <p class="product-description">${product.description}</p>
-            <div class="product-footer">
-              <div class="product-price">
-                <span class="price-val">$${product.price}</span>
-              </div>
-              <div class="product-rating">
-                <span class="star-icon">⭐</span>
-                <span class="rating-val">${product.rating.toFixed(1)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `
-        )
-        .join('');
-
-      container.innerHTML = `
-        <div class="dashboard-layout">
-          <header class="app-header">
-            <div class="header-logo">
-              <span class="logo-icon">⚡</span>
-              <h1>DevDash</h1>
-            </div>
-            <p class="subtitle">Premium Async Developer Dashboard</p>
-          </header>
-          
-          <main class="app-main">
-            <div class="stats-overview">
-              <div class="stat-card">
-                <span class="stat-icon">📦</span>
-                <div class="stat-content">
-                  <span class="stat-label">Total Products</span>
-                  <span class="stat-value">${state.products.length}</span>
-                </div>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">💰</span>
-                <div class="stat-content">
-                  <span class="stat-label">Avg Price</span>
-                  <span class="stat-value">$${(
-                    state.products.reduce((acc, p) => acc + p.price, 0) / state.products.length
-                  ).toFixed(2)}</span>
-                </div>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">⭐</span>
-                <div class="stat-content">
-                  <span class="stat-label">Top Rated</span>
-                  <span class="stat-value">${Math.max(...state.products.map((p) => p.rating)).toFixed(
-                    1
-                  )}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="products-grid">
-              ${productCards}
-            </div>
-          </main>
-        </div>
-      `;
+      renderSuccessState(state, container, callbacks);
       break;
   }
 }

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+tone_instructions: "You are a senior TypeScript and Frontend Engineer. Review the code according to clean code rules, clean architecture principles, and TypeScript strict guidelines. Be direct, concise, and technical."
+
+reviews:
+  profile: "assertive"
+high_level_summary: true
+auto_review:
+  enabled: true
+  drafts: false
+base_branches:
+  - "main"
+  - "master"
+path_instructions:
+  - path: "devdash/src/**/*.ts"
+    instructions: "Verify type safety, ensure no 'any' types are used, check that async flows handle errors, and confirm proper clean architecture separation."
+  - path: "devdash/src/ui/**/*.ts"
+    instructions: "Check that UI components follow single responsibility, are modular, and render Tailwind v4 utility classes cleanly."
