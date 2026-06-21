@@ -2,6 +2,8 @@
 
 A TypeScript single-page dashboard application that loads data from public JSON APIs, transforms it, and displays it with search, filtering, and detail views.
 
+Deploy Github Pages: [https://lehuydiep4.github.io/FSoftAssignment_DevDash/](https://lehuydiep4.github.io/FSoftAssignment_DevDash/)
+
 ## Objectives
 
 - Apply ES6+, asynchronous JavaScript, and strict TypeScript together.

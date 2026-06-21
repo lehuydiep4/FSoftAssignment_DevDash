@@ -11,7 +11,7 @@ export class ProductRepositoryImpl implements ProductRepository {
   private readonly baseUrl = 'https://dummyjson.com';
 
   async getProducts(): Promise<Product[]> {
-    const data = await fetchJson<ApiProductResponse>(`${this.baseUrl}/products`);
+    const data = await fetchJson<ApiProductResponse>(`${this.baseUrl}/products?limit=0`);
     return data.products.map(mapDtoToEntity);
   }
 
