@@ -1,4 +1,4 @@
-import type { AppState } from './types';
+import type { AppState, SuccessStateUpdates } from './types';
 
 let state: AppState = { status: 'idle' };
 const listeners: (() => void)[] = [];
@@ -10,6 +10,15 @@ export function getState(): AppState {
 export function setState(newState: AppState): void {
   state = newState;
   listeners.forEach(listener => listener());
+}
+
+export function updateSuccessState(updates: SuccessStateUpdates): void {
+  if (state.status === 'success') {
+    setState({
+      ...state,
+      ...updates,
+    });
+  }
 }
 
 export function subscribe(listener: () => void): () => void {

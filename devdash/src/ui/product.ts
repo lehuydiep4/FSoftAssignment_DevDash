@@ -1,6 +1,6 @@
-import type { Product } from '../domain/entities/product';
+import type { ProductSummary } from '../types';
 
-export function renderProductCards(products: Product[]): string {
+export function renderProductCards(products: ProductSummary[]): string {
   if (products.length === 0) {
     return `
       <div class="col-span-full text-center py-16 px-5 bg-white/75 dark:bg-slate-800/55 border border-slate-200/80 dark:border-white/6 rounded-3xl animate-[fadeIn_0.4s_ease-out]">

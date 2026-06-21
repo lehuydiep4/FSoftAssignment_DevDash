@@ -5,37 +5,7 @@ import { renderStatsOverview } from './stats';
 import { renderProductCards } from './product';
 import { renderModalContent, renderModalBodyHtml, renderModalStatusBarHtml } from './modal';
 
-/**
- * Filters and sorts the list of products based on search query, category, and sorting criteria.
- */
-function getFilteredAndSortedProducts(
-  products: Product[],
-  searchQuery: string,
-  selectedCategory: string,
-  sortBy: string
-): Product[] {
-  const query = searchQuery.toLowerCase().trim();
-  const filtered = products
-    .filter((p) => {
-      return (
-        p.title.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.brand.toLowerCase().includes(query)
-      );
-    })
-    .filter((p) => {
-      return selectedCategory === 'all' || p.category === selectedCategory;
-    });
-
-  return [...filtered].sort((a, b) => {
-    if (sortBy === 'price-asc') return a.price - b.price;
-    if (sortBy === 'price-desc') return b.price - a.price;
-    if (sortBy === 'rating-desc') return b.rating - a.rating;
-    if (sortBy === 'title-asc') return a.title.localeCompare(b.title);
-    if (sortBy === 'title-desc') return b.title.localeCompare(a.title);
-    return 0; // default
-  });
-}
+import { filterAndSortProducts } from '../application/usecases/filter-sort-products.usecase';
 
 /**
  * Binds DOM event listeners for search input, selectors, product list grid, and details modal.
@@ -245,7 +215,7 @@ function updateModal(state: SuccessState, modalCont: HTMLElement): void {
 
   const modalBody = existingOverlay.querySelector('.modal-body');
   if (modalBody) {
-    modalBody.innerHTML = renderModalBodyHtml(state);
+    modalBody.innerHTML = renderModalBodyHtml(state.details);
   }
   
   const modalBox = existingOverlay.querySelector('#modal-card-box');
@@ -254,7 +224,7 @@ function updateModal(state: SuccessState, modalCont: HTMLElement): void {
     if (existingBar) {
       existingBar.remove();
     }
-    const newBarHtml = renderModalStatusBarHtml(state.detailsStatus, state.selectedProductDetails !== null);
+    const newBarHtml = renderModalStatusBarHtml(state.details);
     if (newBarHtml) {
       modalBox.insertAdjacentHTML('afterbegin', newBarHtml);
     }
@@ -332,7 +302,7 @@ export function renderSuccessState(
   container: HTMLElement,
   callbacks: UiCallbacks
 ): void {
-  const sortedProducts = getFilteredAndSortedProducts(
+  const sortedProducts = filterAndSortProducts(
     state.products,
     state.searchQuery,
     state.selectedCategory,

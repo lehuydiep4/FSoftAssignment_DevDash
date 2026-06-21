@@ -1,4 +1,5 @@
 import type { AppState } from './types';
+import { assertNever } from './types';
 import { renderLoadingView } from './ui/loader';
 import { renderErrorView } from './ui/error';
 import { renderSuccessState } from './ui/success';
@@ -61,5 +62,9 @@ export function renderApp(state: AppState, container: HTMLElement, callbacks: Ui
     case 'success':
       renderSuccessState(state, container, callbacks);
       break;
+
+    default:
+      assertNever(state);
   }
 }
+
